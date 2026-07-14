@@ -19,18 +19,36 @@
       "require": "./dist/dynamic-version.cjs"
     }
   },
-  "files": ["dist", "data", "LICENSE", "README.md"],
+  "files": [
+    "dist",
+    "data",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
     "test:watch": "vitest",
     "prepublishOnly": "npm run build"
   },
-  "dependencies": {},
   "devDependencies": {
-    "typescript": "^5.7",
-    "vitest": "^3.1"
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
   },
-  "keywords": ["llm", "provider", "compat", "openai", "anthropic", "deepseek", "thinking", "reasoning", "payload", "normalize"],
-  "repository": { "type": "git", "url": "https://github.com/Guojiz/llm-provider-compat" }
+  "keywords": [
+    "llm",
+    "provider",
+    "compat",
+    "openai",
+    "anthropic",
+    "deepseek",
+    "thinking",
+    "reasoning",
+    "payload",
+    "normalize"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Guojiz/llm-provider-compat"
+  }
 }
