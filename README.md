@@ -13,64 +13,90 @@ Universal LLM provider compatibility layer — normalizes provider-specific
 payload differences (thinking formats, output budgets, tool pairing, media
 transport) into a single **first-match-wins dispatch pipeline**.
 
-Plus **dynamic version detection** — auto-discovers latest models from provider
-APIs with regex-based version parsing, TTL caching, and per-provider toggle control.
+Plus **dynamic version detection** (auto-discovers latest models from provider
+APIs) and **OAuth login** (device-code flow for xAI Grok, extensible to others).
 
 **License:** MIT
 
 ---
 
-## Supported Providers
+## Supported Providers (51 total)
 
-### Tier 1 — Dedicated Compat Sub-Modules
+### Tier 1 — Dedicated Compat Sub-Modules (14)
 
-These providers have non-standard wire protocols that require explicit
-payload normalization. Each has a dedicated handler in `src/providers/<name>.ts`.
+These have non-standard wire protocols requiring explicit payload normalization.
 
 | Provider | API | Thinking Format | Key Quirks |
 |---|---|---|---|
-| **Anthropic** | `anthropic-messages` | `thinking: { type, budget_tokens }` | Prompt caching, adaptive effort (Fable/Mythos 5), required output cap |
-| **DeepSeek** | `openai-completions` / `anthropic-messages` | `thinking: { type: "enabled"/"disabled" }` | reasoning_effort collapse (low/med→high, xhigh→max), reasoning_content replay, token budget uplift, Anthropic profile for V4 |
-| **Kimi / Moonshot** | `openai-completions` | `thinking: { type, keep? }` + `reasoning_effort` | reasoning_content replay, Moonshot MFJS schema normalization, Kimi Coding utility temp |
-| **DashScope / Qwen** | `openai-completions` | `enable_thinking: boolean` | Also covers dashscope-coding (Kimi-K2 via Alibaba), SiliconFlow, ModelScope, Infini; video → video_url |
-| **Zhipu / BigModel** | `openai-completions` | `thinking: { type, clear_thinking }` | reasoning_content replay, strict field removal, store/stream_options stripping, OpenCode Go endpoint |
-| **MiMo / Xiaomi** | `openai-completions` | `chat_template_kwargs: { enable_thinking, preserve_thinking }` | reasoning_content replay, input_audio transport, video_url transport, token plan variants |
-| **OpenRouter** | `openai-completions` | `reasoning: { effort }` + `verbosity` | Claude Fable/Mythos 5 adaptive effort, disable rejected |
-| **Volcengine Ark** | `openai-completions` | `thinking: { type }` + `reasoning_effort` | Effort enum ceiling (max → high), utility/off thinking disable |
+| **Anthropic** | `anthropic-messages` | `thinking: { type, budget_tokens }` | Prompt caching, adaptive effort (Fable/Mythos 5), required output cap, empty content filter, tool block reorder |
+| **DeepSeek** | `openai-completions` / `anthropic-messages` | `thinking: { type }` + `reasoning_effort` | Effort collapse, reasoning_content replay, token budget uplift, V4 Anthropic profile, "Thinking..." injection |
+| **Kimi / Moonshot** | `openai-completions` | `thinking: { type, keep? }` + `reasoning_effort` | reasoning_content replay, MFJS schema normalization, utility temp |
+| **DashScope / Qwen** | `openai-completions` | `enable_thinking: boolean` | Covers dashscope-coding, SiliconFlow, ModelScope, Infini; video → video_url |
+| **Zhipu / BigModel** | `openai-completions` | `thinking: { type, clear_thinking }` | reasoning_content replay, strict removal, store/stream_options strip, OpenCode Go |
+| **MiMo / Xiaomi** | `openai-completions` | `chat_template_kwargs: { enable_thinking, preserve_thinking }` | reasoning_content replay, input_audio, video_url, token plan |
+| **Mistral / Devstral** | `openai-completions` | _standard OpenAI_ | 9-char tool call IDs, synthetic assistant injection between tool→user |
+| **OpenRouter** | `openai-completions` | `reasoning: { effort }` + `verbosity` | Claude Fable/Mythos 5 adaptive, `usage: { include: true }` |
+| **Volcengine Ark** | `openai-completions` | `thinking: { type }` + `reasoning_effort` | Effort ceiling (max→high), utility/off disable |
 | **LongCat** | `openai-completions` | `thinking: { type: "disabled" }` | Utility-only: disables thinking, strips reasoning_content |
-| **Agnes AI** | `openai-completions` | _stripped_ | No structured reasoning protocol — strips all thinking fields from payload and history |
-| **OpenAI Codex** | `openai-codex-responses` | _stripped_ | Strips unsupported output budget + temperature fields from Responses endpoint |
-| **OpenAI Audio** | `openai-completions` | N/A | Converts `data:audio` image_url → `input_audio` blocks |
-| **DashScope/Kimi/MiMo Video** | `openai-completions` | N/A | Converts `data:video` image_url → `video_url` blocks |
+| **Agnes AI** | `openai-completions` | _stripped_ | No reasoning protocol — strips all thinking fields |
+| **OpenAI Codex** | `openai-codex-responses` | _stripped_ | Strips output budget + temperature from Responses |
+| **OpenAI Audio** | `openai-completions` | N/A | `data:audio` image_url → `input_audio` |
+| **DashScope/Kimi/MiMo Video** | `openai-completions` | N/A | `data:video` image_url → `video_url` |
 
-### Tier 2 — Standard OpenAI-Compatible
+### Tier 2 — Standard OpenAI-Compatible (37)
 
-These providers use the standard OpenAI Chat Completions protocol and pass
-through the dispatcher **without a dedicated sub-module** — the default pathway
-handles them correctly. Any model that doesn't match a Tier 1 handler falls
-through to the default (no-op) path.
+These pass through the default pathway **without a dedicated sub-module**.
 
-| Provider | Base URL | Notes |
-|---|---|---|
-| **OpenAI** | `https://api.openai.com/v1` | GPT-4o, o1, o3, o4-mini |
-| **xAI (Grok)** | `https://api.x.ai/v1` | Grok-4.5, Grok-4.3, reasoning via standard `reasoning_effort` |
-| **Google Gemini** | `https://generativelanguage.googleapis.com/v1beta/openai` | OpenAI-compatible endpoint |
-| **Groq** | `https://api.groq.com/openai/v1` | Ultra-fast inference |
-| **Cohere** | `https://api.cohere.com/v1` | Command R/R+ |
-| **Mistral** | `https://api.mistral.ai/v1` | Mistral Large, Small, Codestral |
-| **Perplexity** | `https://api.perplexity.ai` | Sonar models |
-| **Together AI** | `https://api.together.xyz/v1` | Llama, Mixtral, etc. |
-| **Fireworks** | `https://api.fireworks.ai/inference/v1` | Serverless inference |
-| **SiliconFlow** | `https://api.siliconflow.cn/v1` | Qwen models get `enable_thinking` via Tier 1 quirks routing |
-| **Infini** | _(user-configured)_ | Qwen-style models get `enable_thinking` via Tier 1 quirks |
-| **ModelScope** | _(user-configured)_ | Qwen-style models via Tier 1 quirks |
-| **StepFun** | _(user-configured)_ | Standard Chat Completions |
-| **Baichuan** | _(user-configured)_ | Standard Chat Completions |
-| **Baidu Cloud** | _(user-configured)_ | Standard Chat Completions |
-| **Hunyuan** | _(user-configured)_ | Tencent Hunyuan models |
-| **MiniMax** | _(user-configured)_ | Standard Chat Completions |
-| **Ollama** | `http://localhost:11434/v1` | Local models |
-| **Any OpenAI-compatible** | _(custom baseURL)_ | Works out of the box |
+**API-key providers:** OpenAI, xAI (Grok), Google Gemini, Groq, Cohere, Perplexity, Together AI, Fireworks, DeepInfra, Cerebras, SiliconFlow, ModelScope, Infini, StepFun, Baichuan, Baidu Cloud, Hunyuan, MiniMax, Ollama, Amazon Bedrock, Amazon Bedrock Mantle, Azure OpenAI, Google Vertex AI, Google Vertex AI (Anthropic), Cloudflare AI Gateway, Vercel AI, Venice AI, OpenRouter (non-adaptive models), LongCat (non-utility)
+
+**OAuth providers:** xAI Grok (OAuth), OpenAI Codex (OAuth), GitLab Duo (OAuth), GitHub Copilot (OAuth)
+
+**Special-purpose:** Volcengine Speech (BigASR), System Speech Recognition
+
+---
+
+## OAuth Login
+
+### xAI (Grok) Device-Code OAuth
+
+Full OAuth 2.0 device authorization grant for xAI Grok CLI access.
+
+```ts
+import { createXaiOAuthProvider } from "llm-provider-compat";
+
+const xai = createXaiOAuthProvider();
+
+const creds = await xai.login({
+  onDeviceCode: ({ userCode, verificationUri }) => {
+    console.log(`Open ${verificationUri} and enter code: ${userCode}`);
+  },
+});
+// → { access, refresh, expires, tokenEndpoint }
+
+// Refresh when expired:
+const fresh = await xai.refreshToken(creds);
+```
+
+**Exported API:**
+
+| Export | Description |
+|---|---|
+| `createXaiOAuthProvider(opts?)` | Factory with custom fetch/sleep/now |
+| `xaiOAuthProvider` | Pre-built instance (uses global fetch) |
+| `XAI_OAUTH_CLIENT_ID` | Official xAI Grok CLI client ID |
+| `XAI_OAUTH_DISCOVERY_URL` | OIDC discovery endpoint |
+| `XAI_OAUTH_SCOPES` | Required OAuth scopes |
+| `XAI_OAUTH_RESOURCE_URL` | API resource URL (`cli-chat-proxy.grok.com`) |
+
+### Auth Framework (extensible)
+
+Generic auth types in `src/auth/types.ts`:
+
+```ts
+import type { AuthMethod, OAuthCredentials, ProviderAuthConfig } from "llm-provider-compat";
+```
+
+Supports `oauth` (device-code) and `api` (API key + metadata) methods with customizable login prompts (text/select).
 
 ---
 
@@ -79,144 +105,47 @@ through to the default (no-op) path.
 ```
                      normalizeProviderPayload()
                               │
-                              ▼
               ┌──────────────────────────────┐
               │  1. Provider-Agnostic Patches │
-              │  • stripEmptyTools            │
-              │  • stripIncompatibleThinking  │
-              │  • stripDisabledReasoningEffort│
-              │  • stripOrphanToolMessages    │
-              │  • normalizeImplicitOutputBudget│
-              │  • stripMediaAttachmentMarkers│
-              │  • normalizeAudioTransport    │
+              │  stripEmptyTools /            │
+              │  stripIncompatibleThinking /  │
+              │  stripDisabledReasoningEffort /│
+              │  stripOrphanToolMessages /    │
+              │  normalizeImplicitOutputBudget│
               └──────────────┬───────────────┘
                              │
                              ▼
               ┌──────────────────────────────┐
-              │  2. Provider Dispatch        │
-              │  First-match-wins over        │
-              │  PROVIDER_MODULES[]           │
-              │                              │
-              │  deepseek.matches(model)? → apply()  │
-              │  kimi.matches(model)?    → apply()  │
-              │  qwen.matches(model)?    → apply()  │
-              │  ... (13 sub-modules)            │
-              │                              │
-              │  No match → default (no-op)  │
+              │  2. Provider Dispatch         │
+              │  First-match-wins:            │
+              │  deepseek → kimi → mimo →     │
+              │  mistral → qwen → zhipu →     │
+              │  volcengine → longcat →       │
+              │  agnes → openaiAudio →        │
+              │  openaiVideo → openrouter →   │
+              │  anthropic → codexResponses   │
+              │  → no match = default (no-op) │
               └──────────────┬───────────────┘
                              │
                              ▼
                      Final HTTP Payload
 ```
 
-### How `matches()` Works
-
-Each sub-module's `matches(model)` is a **pure function** that answers: "does
-this model need special payload treatment?" It checks declarative fields
-(`model.compat.thinkingFormat`, `model.provider`, `model.baseUrl`, `model.quirks`)
-rather than hard-coding model IDs. Models that don't match any sub-module
-(Tier 2 above) pass through unmodified — they use the standard
-OpenAI-compatible envelope.
-
-### How `apply()` Works
-
-`apply(payload, model, options)` takes the HTTP request body assembled by the
-SDK (OpenAI or Anthropic shape) and translates it into the provider's actual
-wire format. Immutable contract: never mutates the input; returns a new object
-or the original if unchanged.
-
-### Two Call Paths, One Entry Point
-
-```
-Chat path (streaming):       Utility path (non-streaming):
-SDK before_provider_request   callText() direct fetch
-        │                            │
-        └──────────┬─────────────────┘
-                   │
-                   ▼
-         normalizeProviderPayload()
-```
-
-### Thinking Format Resolution Chain
-
-```
-model.compat.thinkingFormat (explicit)
-    → model.quirks[] ("enable_thinking" → qwen)
-    → provider/endpoint detection (anthropic, deepseek, kimi, etc.)
-    → reasoning model heuristic (reasoning=true + api=anthropic-messages → anthropic)
-    → null (standard OpenAI, no special thinking format)
-```
-
-Every thinking format maps to a specific wire protocol (see table in Tier 1).
-
 ---
 
-## Install
-
-```bash
-npm install llm-provider-compat
-```
-
-## Quick Start
-
-### Payload Normalization
-
-```ts
-import { normalizeProviderPayload } from "llm-provider-compat";
-
-const model = {
-  id: "deepseek-v4-0324",
-  provider: "deepseek",
-  baseUrl: "https://api.deepseek.com/v1",
-  reasoning: true,
-  maxTokens: 131072,
-};
-
-const normalized = normalizeProviderPayload(
-  { model: "deepseek-v4", messages: [{ role: "user", content: "Hello" }], max_tokens: 32000 },
-  model,
-  { mode: "chat", reasoningLevel: "high" }
-);
-// → thinking: { type: "enabled" }, reasoning_effort: "high", max_tokens uplifted
-```
-
-### xAI (Grok)
-
-xAI uses standard OpenAI-compatible Chat Completions — no special sub-module
-needed. It passes through the default dispatch pathway. Just configure your
-SDK with the standard base URL:
-
-```ts
-const model = {
-  id: "grok-4.5",
-  provider: "xai",
-  baseUrl: "https://api.x.ai/v1",
-  reasoning: true,
-  maxTokens: 128000,
-};
-
-const normalized = normalizeProviderPayload(
-  { model: "grok-4.5", messages: [{ role: "user", content: "Hello" }] },
-  model,
-  { mode: "chat", reasoningLevel: "high" }
-);
-// → passes through unmodified (standard OpenAI envelope)
-```
-
-### Dynamic Version Detection
+## Dynamic Version Detection
 
 ```ts
 import { fetchLatestModels } from "llm-provider-compat/dynamic-version";
 
 const { latest } = await fetchLatestModels([
   { providerId: "gemini", baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai", apiKey: "..." },
-  { providerId: "openai", baseUrl: "https://api.openai.com/v1", apiKey: "..." },
   { providerId: "xai", baseUrl: "https://api.x.ai/v1", apiKey: "..." },
-  { providerId: "deepseek", baseUrl: "https://api.deepseek.com/v1", apiKey: "...", autoUpdateEnabled: false },
 ], { masterToggle: true });
-
-// { gemini: { "gemini-flash": "gemini-3.5-flash-preview" }, openai: { ... }, xai: { ... } }
+// → { gemini: { "gemini-flash": "gemini-3.5-flash-preview" }, xai: { ... } }
 ```
+
+Built-in strategies: `openai`, `anthropic`, `gemini`, `deepseek`, `default` (generic `name-X.Y.Z` regex).
 
 ---
 
@@ -229,87 +158,50 @@ const { latest } = await fetchLatestModels([
 | `normalizeProviderPayload` | `(payload, model, options?) → payload` |
 | `normalizeProviderContextMessages` | `(messages, model, options?) → messages` |
 
-### Provider Detection
+### Provider Catalog
 
 | Export | Returns |
 |---|---|
-| `isDeepSeekModel(model)` | `boolean` |
-| `isAnthropicModel(model)` | `boolean` |
-| `getThinkingFormat(model)` | `string \| null` |
-| `getReasoningProfile(model)` | `string \| null` |
-| `modelSupportsImageInput(model)` | `boolean` |
-| `modelSupportsVideoInput(model)` | `boolean` |
-| `modelSupportsAudioInput(model)` | `boolean` |
-| `modelSupportsDirectImageInput(model)` | `boolean` |
-| `modelSupportsDirectVideoInput(model)` | `boolean` |
-| `modelSupportsDirectAudioInput(model)` | `boolean` |
-| `modelSupportsVisualGrounding(model)` | `boolean` |
-| `isDeepSeekFamilyModel(model)` | `boolean` |
-| `isDeepSeekReasoningModel(model)` | `boolean` |
-| `isOfficialMimoEndpoint(model)` | `boolean` |
+| `PROVIDER_CATALOG` | `Record<string, ProviderDefinition>` — all 51 providers |
+| `getProvider(id)` | `ProviderDefinition \| undefined` |
+| `listProviders()` | `string[]` |
+| `listProvidersByTier(tier)` | `ProviderDefinition[]` |
+| `getCompatModule(providerId)` | `string \| null` |
+| `isSupportedProvider(providerId)` | `boolean` |
+
+### Provider Detection
+
+`isDeepSeekModel`, `isAnthropicModel`, `getThinkingFormat`, `getReasoningProfile`,
+`modelSupportsImageInput`, `modelSupportsVideoInput`, `modelSupportsAudioInput`,
+`isDeepSeekFamilyModel`, `isDeepSeekReasoningModel`, `isOfficialMimoEndpoint`
 
 ### Dynamic Version Detection
 
-| Export | Signature |
-|---|---|
-| `fetchLatestModels` | `(configs[], options?) → { latest, fetched, errors, fromCache }` |
-| `resolveLatestModels` | `(modelIds[], providerId, strategy?) → Record<string, string>` |
-| `createVersionCache` | `(initial?) → { get, set, getAll, isExpired, clear }` |
-| `resolveTopModel` | `(latestBySeries, modelIds) → string \| null` |
-| `formatModelLabel` | `(series, modelId) → string` |
+`fetchLatestModels`, `resolveLatestModels`, `createVersionCache`, `resolveTopModel`, `formatModelLabel`
 
 ### Output Budget
 
-| Export | Signature |
-|---|---|
-| `resolveOutputBudgetPolicy` | `(model, options?) → BudgetPolicy` |
-| `resolveOutputCapCapability` | `(model) → Capability` |
-| `normalizeImplicitOutputBudget` | `(payload, model, options?) → payload` |
+`resolveOutputBudgetPolicy`, `resolveOutputCapCapability`, `normalizeImplicitOutputBudget`
 
 ### Tool Pairing
 
-| Export | Signature |
-|---|---|
-| `stripOrphanToolResults` | `(messages) → messages` |
+`stripOrphanToolResults`
 
 ### Known Models
 
-| Export | Signature |
-|---|---|
-| `lookupKnown` | `(provider, modelId) → ModelMeta \| null` |
-| `lookupKnownProvider` | `(provider, modelId) → ModelMeta \| null` |
-| `lookupKnownWithSource` | `(provider, modelId) → { metadata, source } \| null` |
-| `listKnownProviderModels` | `(provider) → string[]` |
-| `setDataDir` | `(dir: string) → void` |
-
-### Model Capabilities
-
-| Export | Value |
-|---|---|
-| `MODEL_IMAGE_TRANSPORTS` | `{ NONE, OPENAI_IMAGE_URL, OPENAI_INPUT_IMAGE, ANTHROPIC_IMAGE, UNSUPPORTED }` |
-| `MODEL_AUDIO_TRANSPORTS` | `{ NONE, MIMO_INPUT_AUDIO, OPENAI_INPUT_AUDIO, UNSUPPORTED }` |
-| `MODEL_VIDEO_TRANSPORTS` | `{ NONE, GEMINI_INLINE_DATA, OPENAI_VIDEO_URL, UNSUPPORTED }` |
+`lookupKnown`, `lookupKnownProvider`, `lookupKnownWithSource`, `listKnownProviderModels`, `setDataDir`
 
 ---
 
-## Adding a New Provider
+## Adding a Provider
 
-**Tier 1 (needs special payload handling):**
+**Tier 1:** Create `src/providers/<name>.ts` → export `matches(model)` + `apply(payload, model, options)` → add to `PROVIDER_MODULES[]` in `src/dispatcher.ts`.
 
-1. Create `src/providers/<name>.ts`
-2. Export `matches(model)` — must tolerate `null`/`undefined`, return `boolean`
-3. Export `apply(payload, model, options)` — immutable contract, no mutation of input
-4. Optionally export `normalizeContextMessages(messages, model, options)` for history validation
-5. Add to `PROVIDER_MODULES[]` array in `src/dispatcher.ts` (append to end unless more specific)
-
-**Tier 2 (standard OpenAI-compatible):**
-
-No code needed — just configure the provider's `baseUrl` + `apiKey` in your
-SDK, and the default dispatch pathway handles it.
+**Tier 2:** Just add to `PROVIDER_CATALOG` in `src/catalog.ts`.
 
 ---
 
 ## Related
 
-- Architecture extracted from [OpenHanako](https://github.com/liliMozi/openhanako)
+- Architecture extracted from [OpenHanako](https://github.com/liliMozi/openhanako) and [OpenCode](https://github.com/anomalyco/opencode)
 - [Issue #1287](https://github.com/liliMozi/openhanako/issues/1287) — Dynamic version detection design
