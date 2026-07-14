@@ -1,5 +1,14 @@
 # llm-provider-compat
 
+**English** | [中文](README_zh.md)
+
+[![npm version](https://img.shields.io/npm/v/llm-provider-compat)](https://www.npmjs.com/package/llm-provider-compat)
+[![license](https://img.shields.io/npm/l/llm-provider-compat)](LICENSE)
+
+```bash
+npm install llm-provider-compat
+```
+
 Universal LLM provider compatibility layer — normalizes provider-specific
 payload differences (thinking formats, output budgets, tool pairing, media
 transport) into a single **first-match-wins dispatch pipeline**.
