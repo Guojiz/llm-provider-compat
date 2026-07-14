@@ -34,8 +34,8 @@ function ensure(): void {
   const d = getDir();
   _raw = JSON.parse(readFileSync(join(d, "known-models.json"), "utf-8"));
   try { _fallbacks = JSON.parse(readFileSync(join(d, "known-model-fallbacks.json"), "utf-8")); } catch { _fallbacks = {}; }
-  _rawCI = Object.fromEntries(Object.entries(_raw).map(([p, ms]) => [p, buildCI(ms as Record<string, any>)]));
-  _fbCI = buildCI(_fallbacks);
+  _rawCI = Object.fromEntries(Object.entries(_raw!).map(([p, ms]) => [p, buildCI(ms as Record<string, any>)]));
+  _fbCI = buildCI(_fallbacks!);
 }
 
 function exact(d: Record<string, any> | null, k: string): any { return d && typeof k === "string" && hasOwn(d, k) ? d[k] : null; }

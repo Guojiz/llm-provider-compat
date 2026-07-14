@@ -26,12 +26,28 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsup",
     "test": "vitest run",
     "test:watch": "vitest",
     "prepublishOnly": "npm run build"
   },
+  "tsup": {
+    "entry": {
+      "index": "src/index.ts",
+      "dynamic-version": "src/dynamic-version.ts"
+    },
+    "format": [
+      "esm",
+      "cjs"
+    ],
+    "dts": true,
+    "splitting": false,
+    "sourcemap": true,
+    "clean": true
+  },
   "devDependencies": {
+    "@types/node": "^26.1.1",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3",
     "vitest": "^3.2.7"
   },
