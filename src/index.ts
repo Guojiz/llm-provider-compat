@@ -47,3 +47,14 @@ export type { VersionCache, VersionCacheEntry, ProviderVersionConfig, LatestMode
 export { resolveOutputBudgetPolicy, resolveOutputCapCapability, normalizeImplicitOutputBudget } from "./utils/output-budget.ts";
 export { stripOrphanToolResults } from "./utils/tool-pairing.ts";
 export { lookupKnown, lookupKnownProvider, lookupKnownWithSource, listKnownProviderModels, setDataDir } from "./known-models.ts";
+
+// Provider catalog (all 37 supported providers)
+export {
+  PROVIDER_CATALOG,
+  getProvider,
+  listProviders,
+  listProvidersByTier,
+  getCompatModule,
+  isSupportedProvider,
+} from "./catalog.ts";
+export type { ProviderDefinition, AuthType } from "./catalog.ts";
