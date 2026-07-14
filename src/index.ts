@@ -65,3 +65,14 @@ export type {
   OAuthAuthorization, OAuthResult, OAuthCredentials,
   ApiKeyAuth, AuthInfo, ProviderAuthConfig,
 } from "./auth/types.ts";
+
+// xAI (Grok) OAuth device-code login
+export {
+  createXaiOAuthProvider,
+  xaiOAuthProvider,
+  XAI_OAUTH_CLIENT_ID,
+  XAI_OAUTH_DISCOVERY_URL,
+  XAI_OAUTH_SCOPES,
+  XAI_OAUTH_RESOURCE_URL,
+} from "./auth/providers/xai.ts";
+export type { XaiOAuthCredentials, XaiDeviceCode, XaiOAuthDriverOptions } from "./auth/providers/xai.ts";

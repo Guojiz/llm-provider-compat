@@ -1,6 +1,6 @@
 {
   "name": "llm-provider-compat",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Universal LLM provider compatibility layer — normalizes provider-specific payload differences (thinking formats, output budgets, tool pairing, media transport) into a single dispatch pipeline.",
   "license": "MIT",
   "author": "Guojiz <guojiz@proton.me>",
