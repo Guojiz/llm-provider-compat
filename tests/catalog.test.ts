@@ -10,7 +10,7 @@ import {
 
 describe("Provider Catalog", () => {
   it("has all 37 providers", () => {
-    expect(Object.keys(PROVIDER_CATALOG).length).toBe(39);
+    expect(Object.keys(PROVIDER_CATALOG).length).toBe(51);
   });
 
   it("has 22 Tier-1 (dedicated compat) providers", () => {
@@ -18,9 +18,9 @@ describe("Provider Catalog", () => {
     expect(t1.length).toBe(22);
   });
 
-  it("has 17 Tier-2 (standard OpenAI-compatible) providers", () => {
+  it("has 29 Tier-2 (standard OpenAI-compatible) providers", () => {
     const t2 = listProvidersByTier("standard");
-    expect(t2.length).toBe(17);
+    expect(t2.length).toBe(29);
   });
 
   // ── Tier 1 verification ──
@@ -68,6 +68,10 @@ describe("Provider Catalog", () => {
     "perplexity", "together", "fireworks", "baichuan",
     "baidu-cloud", "hunyuan", "stepfun", "ollama",
     "xai-oauth", "volcengine-speech", "system-speech",
+    "amazon-bedrock", "amazon-bedrock-mantle", "azure",
+    "google-vertex", "google-vertex-anthropic", "deepinfra",
+    "cerebras", "cloudflare-gateway", "vercel-ai",
+    "gitlab-duo", "github-copilot", "venice-ai",
   ];
 
   for (const id of tier2Providers) {
@@ -98,7 +102,7 @@ describe("Provider Catalog", () => {
   // ── Helpers ──
 
   it("listProviders returns all ids", () => {
-    expect(listProviders()).toHaveLength(39);
+    expect(listProviders()).toHaveLength(51);
   });
 
   it("getCompatModule returns correct modules", () => {

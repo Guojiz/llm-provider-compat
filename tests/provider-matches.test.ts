@@ -283,6 +283,44 @@ describe("LongCat", () => {
   });
 });
 
+describe("Mistral / Devstral", () => {
+  it("matches mistral provider", () => {
+    const p = normalizeProviderPayload(
+      mkPayload({
+        messages: [
+          { role: "user", content: "test" },
+          { role: "assistant", tool_calls: [{ id: "short", type: "function", function: { name: "test", arguments: "{}" } }] },
+          { role: "tool", tool_call_id: "short", content: "result" },
+        ],
+      }),
+      mkModel({ provider: "mistral", baseUrl: "https://api.mistral.ai/v1" }),
+      { mode: "chat" },
+    );
+    // Mistral normalizes tool call IDs to 9-char alphanumeric
+    const tc = p.messages[1].tool_calls[0];
+    expect(tc.id).toHaveLength(9);
+    expect(tc.id).toMatch(/^[a-z0-9]+$/i);
+  });
+
+  it("injects synthetic assistant between tool→user", () => {
+    const p = normalizeProviderPayload(
+      mkPayload({
+        messages: [
+          { role: "user", content: "test" },
+          { role: "assistant", tool_calls: [{ id: "aaaaaaaaa", type: "function", function: { name: "t", arguments: "{}" } }] },
+          { role: "tool", tool_call_id: "aaaaaaaaa", content: "ok" },
+          { role: "user", content: "next" },
+        ],
+      }),
+      mkModel({ provider: "devstral", baseUrl: "https://api.devstral.ai/v1" }),
+      { mode: "chat" },
+    );
+    // Should have injected assistant between tool and user
+    const roles = p.messages.map((m: any) => m.role);
+    expect(roles).toContain("assistant");
+  });
+});
+
 describe("Agnes AI", () => {
   it("strips thinking fields", () => {
     const p = normalizeProviderPayload(

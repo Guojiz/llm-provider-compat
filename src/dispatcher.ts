@@ -23,6 +23,7 @@ import * as zhipu from "./providers/zhipu.ts";
 import * as volcengine from "./providers/volcengine.ts";
 import * as longcat from "./providers/longcat.ts";
 import * as agnes from "./providers/agnes.ts";
+import * as mistral from "./providers/mistral.ts";
 import * as openaiInputAudio from "./providers/openai-input-audio.ts";
 import * as openaiVideoUrl from "./providers/openai-video-url.ts";
 import * as openrouter from "./providers/openrouter.ts";
@@ -47,7 +48,7 @@ interface ProviderModule {
 }
 
 const PROVIDER_MODULES: ProviderModule[] = [
-  deepseek, kimi, mimo, qwen, zhipu, volcengine, longcat, agnes,
+  deepseek, kimi, mimo, mistral, qwen, zhipu, volcengine, longcat, agnes,
   openaiInputAudio, openaiVideoUrl, openrouter, anthropic, codexResponses,
 ];
 

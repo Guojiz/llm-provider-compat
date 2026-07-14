@@ -58,3 +58,10 @@ export {
   isSupportedProvider,
 } from "./catalog.ts";
 export type { ProviderDefinition, AuthType } from "./catalog.ts";
+
+// Auth framework (generic OAuth + API key)
+export type {
+  AuthMethod, AuthMethodType, AuthPrompt, TextPrompt, SelectPrompt,
+  OAuthAuthorization, OAuthResult, OAuthCredentials,
+  ApiKeyAuth, AuthInfo, ProviderAuthConfig,
+} from "./auth/types.ts";

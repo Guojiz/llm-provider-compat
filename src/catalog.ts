@@ -418,6 +418,118 @@ export const PROVIDER_CATALOG: Record<string, ProviderDefinition> = {
     defaultApi: "system-speech",
     compatTier: "standard",
   },
+
+  // ═══ OpenCode additions (providers OpenCode supports that we were missing) ═══
+
+  "amazon-bedrock": {
+    id: "amazon-bedrock",
+    displayName: "Amazon Bedrock",
+    authType: "api-key",
+    defaultBaseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
+    defaultApi: "amazon-bedrock",
+    compatTier: "standard",
+  },
+
+  "amazon-bedrock-mantle": {
+    id: "amazon-bedrock-mantle",
+    displayName: "Amazon Bedrock Mantle",
+    authType: "api-key",
+    defaultBaseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
+    defaultApi: "amazon-bedrock",
+    compatTier: "standard",
+  },
+
+  azure: {
+    id: "azure",
+    displayName: "Azure OpenAI",
+    authType: "api-key",
+    defaultBaseUrl: "https://RESOURCE_NAME.openai.azure.com/openai/v1",
+    defaultApi: "openai-completions",
+    compatTier: "standard",
+  },
+
+  "google-vertex": {
+    id: "google-vertex",
+    displayName: "Google Vertex AI",
+    authType: "api-key",
+    defaultBaseUrl: "https://us-central1-aiplatform.googleapis.com/v1",
+    defaultApi: "google-vertex",
+    compatTier: "standard",
+  },
+
+  "google-vertex-anthropic": {
+    id: "google-vertex-anthropic",
+    displayName: "Google Vertex AI (Anthropic)",
+    authType: "api-key",
+    defaultBaseUrl: "https://us-central1-aiplatform.googleapis.com/v1",
+    defaultApi: "anthropic-messages",
+    compatTier: "standard",
+  },
+
+  deepinfra: {
+    id: "deepinfra",
+    displayName: "DeepInfra",
+    authType: "api-key",
+    defaultBaseUrl: "https://api.deepinfra.com/v1/openai",
+    defaultApi: "openai-completions",
+    compatTier: "standard",
+  },
+
+  cerebras: {
+    id: "cerebras",
+    displayName: "Cerebras",
+    authType: "api-key",
+    defaultBaseUrl: "https://api.cerebras.ai/v1",
+    defaultApi: "openai-completions",
+    compatTier: "standard",
+  },
+
+  "cloudflare-gateway": {
+    id: "cloudflare-gateway",
+    displayName: "Cloudflare AI Gateway",
+    authType: "api-key",
+    defaultBaseUrl: "https://gateway.ai.cloudflare.com/v1",
+    defaultApi: "openai-completions",
+    compatTier: "standard",
+  },
+
+  "vercel-ai": {
+    id: "vercel-ai",
+    displayName: "Vercel AI",
+    authType: "api-key",
+    defaultBaseUrl: "https://api.vercel.ai/v1",
+    defaultApi: "openai-completions",
+    compatTier: "standard",
+  },
+
+  "gitlab-duo": {
+    id: "gitlab-duo",
+    displayName: "GitLab Duo",
+    authType: "oauth",
+    authJsonKey: "gitlab",
+    defaultBaseUrl: "https://gitlab.com/api/v4",
+    defaultApi: "openai-completions",
+    compatTier: "standard",
+  },
+
+  "github-copilot": {
+    id: "github-copilot",
+    displayName: "GitHub Copilot",
+    authType: "oauth",
+    authJsonKey: "github-copilot",
+    defaultBaseUrl: "https://api.githubcopilot.com",
+    defaultApi: "openai-completions",
+    compatTier: "standard",
+  },
+
+  "venice-ai": {
+    id: "venice-ai",
+    displayName: "Venice AI",
+    authType: "api-key",
+    defaultBaseUrl: "https://api.venice.ai/v1",
+    defaultApi: "openai-completions",
+    compatTier: "standard",
+  },
 };
 
 // ── Helpers ──
