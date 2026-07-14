@@ -1,0 +1,36 @@
+{
+  "name": "llm-provider-compat",
+  "version": "0.1.0",
+  "description": "Universal LLM provider compatibility layer — normalizes provider-specific payload differences (thinking formats, output budgets, tool pairing, media transport) into a single dispatch pipeline.",
+  "license": "MIT",
+  "author": "Guojiz <guojiz@proton.me>",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./dynamic-version": {
+      "types": "./dist/dynamic-version.d.ts",
+      "import": "./dist/dynamic-version.js",
+      "require": "./dist/dynamic-version.cjs"
+    }
+  },
+  "files": ["dist", "data", "LICENSE", "README.md"],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.7",
+    "vitest": "^3.1"
+  },
+  "keywords": ["llm", "provider", "compat", "openai", "anthropic", "deepseek", "thinking", "reasoning", "payload", "normalize"],
+  "repository": { "type": "git", "url": "https://github.com/Guojiz/llm-provider-compat" }
+}
